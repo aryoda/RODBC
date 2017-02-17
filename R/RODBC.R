@@ -305,3 +305,23 @@ odbcDataSources <- function(type = c("all", "user", "system"))
     type <- match(type, c("all", "user", "system"))
     .Call(C_RODBCListDataSources, type)
 }
+
+
+odbcGetConnectionTimeout <- function(channel)
+{
+  if(!odbcValidChannel(channel))
+    stop("first argument is not an open RODBC channel")
+  .Call(C_RODBCGetConnectionTimeout, attr(channel, "handle_ptr"))
+}
+
+odbcSetConnectionTimeout <- function(channel, timeout = 30)
+{
+  if(!odbcValidChannel(channel))
+    stop("first argument is not an open RODBC channel")
+  .Call(C_RODBCSetConnectionTimeout, attr(channel, "handle_ptr"), timeout)
+  # if(stat != 0L)
+  #   odbcGetErrMsg(channel)
+  # else
+  #   return(invisible(stat))
+}
+

@@ -1506,6 +1506,47 @@ SEXP RODBCListDataSources(SEXP stype)
     return ans;
 }
 
+
+
+SEXP RODBCGetConnectionTimeout(SEXP chan)
+{
+  pRODBCHandle thisHandle = R_ExternalPtrAddr(chan);
+  int rc;
+  SQLUINTEGER	value;
+  
+  rc = SQLGetConnectAttr (thisHandle->hDbc,
+                          SQL_ATTR_CONNECTION_TIMEOUT,
+                          (SQLPOINTER) &value,
+                          (SQLINTEGER) sizeof(value),
+                          0);  // (SQLINTEGER) SQL_IS_UINTEGER);
+  
+  if( rc != SQL_SUCCESS )
+    geterr(thisHandle);
+  
+  return ScalarInteger(value);
+}
+
+
+
+SEXP RODBCSetConnectionTimeout(SEXP chan, SEXP timeout)
+{
+  pRODBCHandle thisHandle = R_ExternalPtrAddr(chan);
+  int iTimeout = asInteger(timeout);
+  int rc;
+
+  rc = SQLSetConnectAttr(thisHandle->hDbc,
+                         SQL_ATTR_CONNECTION_TIMEOUT,
+                         (SQLPOINTER) (unsigned long) iTimeout,
+                         0);
+  
+  if( rc != SQL_SUCCESS )
+    geterr(thisHandle);
+  
+  return ScalarInteger(rc);
+}
+
+
+
 #include <R_ext/Rdynload.h>
 
 static const R_CallMethodDef CallEntries[] = {
@@ -1531,6 +1572,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"RODBCTypeInfo", (DL_FUNC) &RODBCTypeInfo, 2},
     {"RODBCListDataSources", (DL_FUNC) &RODBCListDataSources, 1},
     {"RODBCTerm", (DL_FUNC) &RODBCTerm, 0},
+    {"RODBCGetConnectionTimeout", (DL_FUNC) &RODBCGetConnectionTimeout, 1},
+    {"RODBCSetConnectionTimeout", (DL_FUNC) &RODBCSetConnectionTimeout, 2},
     {NULL, NULL, 0}
 };
 
