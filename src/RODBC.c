@@ -1534,6 +1534,13 @@ SEXP RODBCSetConnectionTimeout(SEXP chan, SEXP timeout)
   int iTimeout = asInteger(timeout);
   int rc;
 
+  // Note: The 3rd parameter ("ValuePtr") may be an integer as well as
+  //       a pointer to buffers depending on the context of the call
+  //       (passed as 2nd "Attribute" parameter).
+  //       This may cause a warning if pointers and integers do NOT have
+  //       the same length as in 64-bit Windows.
+  //       You can ignore this warning.
+  // See:  https://docs.microsoft.com/en-us/sql/odbc/reference/syntax/sqlsetconnectattr-function
   rc = SQLSetConnectAttr(thisHandle->hDbc,
                          SQL_ATTR_CONNECTION_TIMEOUT,
                          (SQLPOINTER) (unsigned long) iTimeout,

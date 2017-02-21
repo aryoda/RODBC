@@ -307,6 +307,28 @@ odbcDataSources <- function(type = c("all", "user", "system"))
 }
 
 
+#' Get the current ODBC connection timeout
+#'
+#' Gets the number of seconds to wait for any request on the connection
+#' to complete before returning to the application.
+#' 
+#' The connection timeout period is used for any request to the data source.
+#' If it expires before the data source responds to the request you will get
+#' an error message.
+#' 
+#' @param channel connection handle as returned by \code{\link{odbcConnect}} and \code{\link{odbcDriverConnect}}
+#'
+#' @return Returns the current connection timeout in seconds. 0 (zero) means there is no timeout
+#' 
+#' @note   \strong{Don't confuse the connection timeout with the statement timeout!}
+#'         A statement (SQL code) sent to the data source expires if the data source
+#'         does not return the result set within thestatement timeout period.
+#'         The connection timeout period expires if the statement could not be
+#'         sent to the data source within the connection timeout period.
+#'         
+#' @seealso \code{\link{odbcSetConnectionTimeout}} 
+#' 
+#' @export
 odbcGetConnectionTimeout <- function(channel)
 {
   if(!odbcValidChannel(channel))
@@ -314,14 +336,41 @@ odbcGetConnectionTimeout <- function(channel)
   .Call(C_RODBCGetConnectionTimeout, attr(channel, "handle_ptr"))
 }
 
+#' Set the ODBC connection timeout
+#'
+#' The connection timeout period is used for any request to the data source.
+#' If it expires before the data source responds to the request you will get
+#' an error message.
+#'
+#' @param channel connection handle as returned by \code{\link{odbcConnect}} and \code{\link{odbcDriverConnect}}
+#' @param timeout The new timeout value in seconds (0 means "no timeout")
+#'
+#' @return  0 = success,
+#'          1 = success but with an info message,
+#'         -1 = error,
+#'         -2 = invalid handle
+#'         
+#'         Use \code{\link{odbcGetErrMsg}} to get the message).
+#'         
+#' @note   Not every ODBC driver supports (changing) the connection timeout.
+#'         For more details see the documentation of your ODBC driver.
+#'         
+#' @note   \strong{Don't confuse the connection timeout with the statement timeout!}
+#'         A statement (SQL code) sent to the data source expires if the data source
+#'         does not return the result set within thestatement timeout period.
+#'         The connection timeout period expires if the statement could not be
+#'         sent to the data source within the connection timeout period.
+#'         
+#' @note   If your ODBC driver is configured to use a connection pool the connection timeout
+#'         may be ignored or cause unforeseeable timeouts.
+#'         
+#' @seealso \code{\link{odbcGetConnectionTimeout}}
+#' 
+#' @export
 odbcSetConnectionTimeout <- function(channel, timeout = 30)
 {
   if(!odbcValidChannel(channel))
     stop("first argument is not an open RODBC channel")
   .Call(C_RODBCSetConnectionTimeout, attr(channel, "handle_ptr"), timeout)
-  # if(stat != 0L)
-  #   odbcGetErrMsg(channel)
-  # else
-  #   return(invisible(stat))
 }
 
